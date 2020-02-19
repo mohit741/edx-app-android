@@ -25,6 +25,7 @@ import org.edx.mobile.databinding.FragmentTabsBaseBinding;
 import org.edx.mobile.deeplink.DeepLinkManager;
 import org.edx.mobile.deeplink.Screen;
 import org.edx.mobile.deeplink.ScreenDef;
+import org.edx.mobile.event.ScreenArgumentsEvent;
 import org.edx.mobile.model.FragmentItemModel;
 import org.edx.mobile.view.adapters.FragmentItemPagerAdapter;
 

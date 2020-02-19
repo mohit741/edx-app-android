@@ -26,6 +26,7 @@ import org.edx.mobile.databinding.FragmentMainDiscoveryBinding;
 import org.edx.mobile.deeplink.Screen;
 import org.edx.mobile.deeplink.ScreenDef;
 import org.edx.mobile.event.DiscoveryTabSelectedEvent;
+import org.edx.mobile.event.ScreenArgumentsEvent;
 import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.view.dialog.NativeFindCoursesFragment;
 
