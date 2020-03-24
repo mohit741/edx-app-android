@@ -22,11 +22,11 @@
 
             <ImageView
                 android:id="@+id/iv_edx_logo"
-                android:layout_width="@dimen/logo_width"
-                android:layout_height="@dimen/logo_height"
+                android:layout_width="159dp"
+                android:layout_height="75dp"
                 android:layout_marginTop="@dimen/logo_top_margin"
                 android:contentDescription="@string/phonetic_app_name"
-                android:src="@drawable/launch_screen_logo" />
+                android:src="@drawable/mf_text_logo" />
 
             <TextView
                 android:id="@+id/tv_launch_text"

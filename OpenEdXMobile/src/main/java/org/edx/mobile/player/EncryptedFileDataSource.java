@@ -76,9 +76,7 @@ public final class EncryptedFileDataSource implements DataSource {
 
     private void setupInputStream() throws FileNotFoundException {
         File encryptedFile = new File(mUri.getPath());
-        logger.debug("File Exists:"+String.valueOf(encryptedFile.exists()));
         FileInputStream fileInputStream = new FileInputStream(encryptedFile);
-        logger.debug("FILE: "+ fileInputStream.toString());
         mInputStream = new StreamingCipherInputStream(fileInputStream, mCipher, mSecretKeySpec, mIvParameterSpec);
     }
 

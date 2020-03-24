@@ -68,10 +68,10 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
     private String videoUri;
     private static final Logger logger = new Logger(VideoPlayer.class.getName());
     // AES
-    public static final String AES_ALGORITHM = "AES";
-    public static final String AES_TRANSFORMATION = "AES/CTR/NoPadding";
-    public static final String SECRET_KEY= "DCC789BCEB2C593D";
-    public static final String IV = "B873CA042AAE847F";
+    private final String AES_ALGORITHM = "AES";
+    private final String AES_TRANSFORMATION = "AES/CTR/NoPadding";
+    private final String SECRET_KEY= "DCC789BCEB2C593D";
+    private final String IV = "B873CA042AAE847F";
 
 
     private Cipher mCipher;
@@ -331,9 +331,7 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
         if (VideoUtil.videoHasFormat(videoUrl, VIDEO_FORMAT_M3U8)) {
             mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(videoUrl));
-            logger.debug("-----VideoUtil------");
         } else {
-            logger.debug("-----Extractor------");
             if(videoUrl.contains("/storage/")){
                 DataSpec dataSpec = new DataSpec(uri);
                 DataSource.Factory cryptedDataSourceFactory = new EncryptedFileDataSourceFactory(mCipher, mSecretKeySpec, mIvParameterSpec, bandwidthMeter, dataSpec);
@@ -345,7 +343,6 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
                         .createMediaSource(Uri.parse(videoUrl));
             }
         }
-        logger.debug(mediaSource.toString());
         return mediaSource;
     }
 

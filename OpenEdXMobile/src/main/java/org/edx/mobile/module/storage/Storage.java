@@ -131,7 +131,6 @@ public class Storage implements IStorage {
 
     @Override
     public int removeDownload(VideoModel model) {
-        logger.debug("removeDownload called 0");
         // FIXME: Refactor this function to use the list variant of removeDownload function below.
         int count = db.getVideoCountByVideoUrl(model.getVideoUrl(), null);
         if (count <= 1) {
@@ -161,7 +160,6 @@ public class Storage implements IStorage {
 
     @Override
     public void removeAllDownloads() {
-        logger.debug("removeDownload called 2");
         final String username = loginPrefs.getUsername();
         final String sha1Username;
         if (TextUtils.isEmpty(username)) {
@@ -184,7 +182,6 @@ public class Storage implements IStorage {
     }
 
     private int removeDownloadsFromApp(List<VideoModel> result, String username) {
-        logger.debug("removeDownload called 3");
         if (result == null || result.size() <= 0) {
             return 0;
         }
@@ -425,7 +422,6 @@ public class Storage implements IStorage {
             NativeDownloadModel nm = dm.getDownload(dmId);
             if (nm != null && nm.status == DownloadManager.STATUS_SUCCESSFUL) {
                 {
-                    logger.debug("nm downloas status: "+(nm.status));
                     DownloadEntry e = (DownloadEntry) db.getDownloadEntryByDmId(dmId, null);
                     e.downloaded = DownloadEntry.DownloadedState.DOWNLOADED;
                     e.filepath = nm.filepath;

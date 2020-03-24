@@ -39,8 +39,6 @@ public class SecurityUtil {
         Collections.addAll(exceptionsList, PrefManager.Pref.getAllPreferenceFileNames());
         exceptionsList.add(DbStructure.NAME);
         logger.debug("SECURITY UTIL");
-        logger.debug(PrefManager.Pref.getAllPreferenceFileNames().toString());
-        logger.debug(exceptionsList.toString());
 
         // Clear the data directory
         PackageManager packageManager = context.getPackageManager();
@@ -50,8 +48,8 @@ public class SecurityUtil {
             File[] filesList = dataDir.listFiles();
             if (filesList != null) {
                 for (final File child : filesList) {
-                    FileUtil.deleteRecursive(child, exceptionsList);
-                    logger.debug(child.getName());
+                    if(!child.getName().contains("_aes"))
+                        FileUtil.deleteRecursive(child, exceptionsList);
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {

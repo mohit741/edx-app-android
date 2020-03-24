@@ -18,16 +18,7 @@ import org.edx.mobile.module.db.DataCallback;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.SecureRandom;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -83,18 +74,13 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
                             if (downloadEntry != null) {
                                 // This means that the download was either cancelled from the native
                                 // download manager app or the cancel button on download notification
-                                logger.debug("ERROR: 1");
-                                System.out.println("ERROR: 1");
                                 environment.getStorage().removeDownload(downloadEntry);
                             } else {
-                                logger.debug("ERROR: 2");
-                                System.out.println("ERROR: 2");
                                 environment.getDownloadManager().removeDownloads(id);
                             }
                             return;
                         } else {
                             logger.debug("Download successful for id : " + id);
-                            logger.debug("nm filepath: "+nm.filepath);
                             encryptVideo(nm.filepath);
                         }
 
@@ -103,20 +89,10 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
                             @Override
                             public void onResult(VideoModel result) {
                                 if (result != null) {
-                                    logger.debug("RESULT callback : "+result.toString());
-                                    logger.debug("onResult : "+result.getFilePath());
                                     DownloadEntry download = (DownloadEntry) result;
-                                    logger.debug(download.filepath);
                                     AnalyticsRegistry analyticsRegistry = environment.getAnalyticsRegistry();
                                     analyticsRegistry.trackDownloadComplete(download.videoId, download.eid,
                                             download.lmsUrl);
-                                    /*try {
-                                        scramble(result.getFilePath(), result.getSize()%1024);
-                                        logger.debug("Scrambled: "+result.getFilePath());
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-                                    }*/
                                 }
                             }
 
@@ -159,45 +135,13 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
             cipherOutputStream.close();
             fileOutputStream.close();
             inputStream.close();
-            logger.debug("Done Encryption");
-            logger.debug("CHECK " + encryptedFile.exists());
             boolean f = tmp.delete();
             if(f){
                 logger.debug("Successfully deleted file "+ tmp.getName() +" after encryption");
-                /*if(encryptedFile.renameTo(new File(filePath))){
-                    logger.debug("File successfully renamed");
-                }*/
-                logger.debug("CHECK " + tmp.exists());
-                logger.debug("CHECK " + encryptedFile.exists());
-                logger.debug("CHECK " + encryptedFile.toString());
             }
         }
         catch (Exception e){
             e.printStackTrace();
         }
-    }
-    // TODO Used to corrupt files, Remove as we don't need these
-    private void scramble(String filePath, long scrambledByteCount) throws IOException{
-        RandomAccessFile file = new RandomAccessFile(filePath, "rw");
-        Random random = new Random();
-        long fileLength = file.length();
-        for(long count = 0; count < scrambledByteCount; count++) {
-            long nextPosition = nextLong(random,fileLength-1);
-            file.seek(nextPosition);
-
-            int scrambleByte = random.nextInt(255) - 128;
-            file.write(scrambleByte);
-        }
-
-        file.close();
-    }
-    long nextLong(Random rng, long n) {
-        // error checking and 2^x checking removed for simplicity.
-        long bits, val;
-        do {
-            bits = (rng.nextLong() << 1) >>> 1;
-            val = bits % n;
-        } while (bits-val+(n-1) < 0L);
-        return val;
     }
 }

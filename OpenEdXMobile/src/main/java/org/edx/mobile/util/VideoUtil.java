@@ -127,37 +127,29 @@ public class VideoUtil {
      * @return Best encoding video url that can be locally downloaded path or online url
      */
     public static String getVideoPath(Context context, DownloadEntry video) {
-        System.out.println("0 videoutil FILE: "+ video.filepath);
         String filepath = null;
         if (video.filepath != null && video.filepath.length() > 0) {
-            System.out.println("0 true videoutil FILE: "+ video.filepath);
             if (video.isDownloaded() || video.filepath.contains("/storage/")) {
-                System.out.println("videoutil FILE: downloaded");
                 final File f = new File(video.filepath+"_aes");
-                System.out.println("videoutil FILE exists: "+f.exists());
                 if (f.exists()) {
                     // play from local
                     filepath = video.filepath;
-                    System.out.println("videoutil FILE: "+ filepath);
                 }
             }
         } else {
             final DownloadEntry de = (DownloadEntry) DatabaseFactory.getInstance(DatabaseFactory.TYPE_DATABASE_NATIVE)
                     .getIVideoModelByVideoUrl(
                             video.url, null);
-            System.out.println("de videoutil FILE: "+de.filepath+" :"+video.url);
             if (de != null) {
                 if (de.filepath != null) {
                     final File f = new File(de.filepath);
                     if (f.exists()) {
                         // play from local
                         filepath = de.filepath;
-                        System.out.println("2 videoutil FILE: "+ filepath);
                     }
                 }
             }
         }
-        System.out.println("3 videoutil FILE: "+ filepath);
         if (TextUtils.isEmpty(filepath)) {
             // not available on local, so play online
             filepath = video.getBestEncodingUrl(context);

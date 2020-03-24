@@ -97,7 +97,6 @@ public class IDownloadManagerImpl implements IDownloadManager {
         logger.debug("Starting download: " + url);
 
         Uri target = Uri.fromFile(new File(destFolder, Sha1Util.SHA1(url)));
-        logger.debug("URI : "+target.toString());
         Request request = new Request(Uri.parse(url));
         request.setDestinationUri(target);
         request.setTitle(title);
