@@ -131,6 +131,7 @@ public class Storage implements IStorage {
 
     @Override
     public int removeDownload(VideoModel model) {
+        logger.debug("removeDownload called 0");
         // FIXME: Refactor this function to use the list variant of removeDownload function below.
         int count = db.getVideoCountByVideoUrl(model.getVideoUrl(), null);
         if (count <= 1) {
@@ -151,6 +152,7 @@ public class Storage implements IStorage {
 
     @Override
     public int removeDownloads(List<VideoModel> modelList) {
+        logger.debug("removeDownload called 1");
         final int deletedVideos = removeDownloadsFromApp(modelList, null);
         logger.debug("Number of downloads removed by Download Manager: " + deletedVideos);
         EventBus.getDefault().post(new DownloadedVideoDeletedEvent());
@@ -159,6 +161,7 @@ public class Storage implements IStorage {
 
     @Override
     public void removeAllDownloads() {
+        logger.debug("removeDownload called 2");
         final String username = loginPrefs.getUsername();
         final String sha1Username;
         if (TextUtils.isEmpty(username)) {
@@ -181,6 +184,7 @@ public class Storage implements IStorage {
     }
 
     private int removeDownloadsFromApp(List<VideoModel> result, String username) {
+        logger.debug("removeDownload called 3");
         if (result == null || result.size() <= 0) {
             return 0;
         }
@@ -213,6 +217,7 @@ public class Storage implements IStorage {
      * @return true if delete succeeds or if file does NOT exist, false otherwise.
      */
     private boolean deleteFile(String filepath) {
+        logger.debug("removeDownload called 4");
         try {
             if(filepath != null) {
                 File file = new File(filepath);
@@ -420,15 +425,16 @@ public class Storage implements IStorage {
             NativeDownloadModel nm = dm.getDownload(dmId);
             if (nm != null && nm.status == DownloadManager.STATUS_SUCCESSFUL) {
                 {
+                    logger.debug("nm downloas status: "+(nm.status));
                     DownloadEntry e = (DownloadEntry) db.getDownloadEntryByDmId(dmId, null);
                     e.downloaded = DownloadEntry.DownloadedState.DOWNLOADED;
                     e.filepath = nm.filepath;
-                    if(e.size<=0){
+                    if(e.size==0){
                         e.size = nm.size;
                     }
                     e.downloadedOn = System.currentTimeMillis();
                     // update file duration
-                    if(e.duration==0){
+                    if(e.duration!=0){
                         try {
                             MediaMetadataRetriever r = new MediaMetadataRetriever();
                             FileInputStream in = new FileInputStream(new File(e.filepath));

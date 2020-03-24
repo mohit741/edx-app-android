@@ -97,6 +97,7 @@ public class IDownloadManagerImpl implements IDownloadManager {
         logger.debug("Starting download: " + url);
 
         Uri target = Uri.fromFile(new File(destFolder, Sha1Util.SHA1(url)));
+        logger.debug("URI : "+target.toString());
         Request request = new Request(Uri.parse(url));
         request.setDestinationUri(target);
         request.setTitle(title);
@@ -108,7 +109,10 @@ public class IDownloadManagerImpl implements IDownloadManager {
         }
 
         dmid = dm.enqueue(request);
-
+        logger.debug(String.valueOf(isDownloadComplete(dmid)));
+        if(isDownloadComplete(dmid) && target.toString().contains("videos")){
+            logger.debug("DCompleted");
+        }
         return dmid;
     }
 
