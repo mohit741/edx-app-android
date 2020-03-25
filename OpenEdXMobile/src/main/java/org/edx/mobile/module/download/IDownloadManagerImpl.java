@@ -108,7 +108,10 @@ public class IDownloadManagerImpl implements IDownloadManager {
         }
 
         dmid = dm.enqueue(request);
-
+        logger.debug(String.valueOf(isDownloadComplete(dmid)));
+        if(isDownloadComplete(dmid) && target.toString().contains("videos")){
+            logger.debug("DCompleted");
+        }
         return dmid;
     }
 

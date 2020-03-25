@@ -15,10 +15,28 @@ import org.edx.mobile.model.download.NativeDownloadModel;
 import org.edx.mobile.module.analytics.AnalyticsRegistry;
 import org.edx.mobile.module.db.DataCallback;
 
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import roboguice.receiver.RoboBroadcastReceiver;
 
 public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
     private final Logger logger = new Logger(getClass().getName());
+    public static final String AES_ALGORITHM = "AES";
+    public static final String AES_TRANSFORMATION = "AES/CTR/NoPadding";
+    public static final String SECRET_KEY= "DCC789BCEB2C593D";
+    public static final String IV = "B873CA042AAE847F";
+    private Cipher mCipher;
+    private SecretKeySpec mSecretKeySpec;
+    private IvParameterSpec mIvParameterSpec;
+
 
     @Inject
     private IEdxEnvironment environment;
@@ -63,6 +81,7 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
                             return;
                         } else {
                             logger.debug("Download successful for id : " + id);
+                            encryptVideo(nm.filepath);
                         }
 
                         // mark download as completed
@@ -71,7 +90,6 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
                             public void onResult(VideoModel result) {
                                 if (result != null) {
                                     DownloadEntry download = (DownloadEntry) result;
-
                                     AnalyticsRegistry analyticsRegistry = environment.getAnalyticsRegistry();
                                     analyticsRegistry.trackDownloadComplete(download.videoId, download.eid,
                                             download.lmsUrl);
@@ -89,4 +107,41 @@ public class DownloadCompleteReceiver extends RoboBroadcastReceiver {
         }
     }
 
+    // Encrypt the downloaded video and delete original playable video -mohit741
+    private void encryptVideo(String filePath){
+        byte[] mKEY = SECRET_KEY.getBytes();
+        byte[] mIV = IV.getBytes();
+        mSecretKeySpec = new SecretKeySpec(mKEY, AES_ALGORITHM);
+        mIvParameterSpec = new IvParameterSpec(mIV);
+        try {
+            mCipher = Cipher.getInstance(AES_TRANSFORMATION);
+            mCipher.init(Cipher.ENCRYPT_MODE, mSecretKeySpec, mIvParameterSpec);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            File tmp = new File(filePath);
+            File encryptedFile = new File(filePath+"_aes");
+            FileInputStream inputStream = new FileInputStream(tmp);
+            FileOutputStream fileOutputStream = new FileOutputStream(encryptedFile);
+            CipherOutputStream cipherOutputStream = new CipherOutputStream(fileOutputStream, mCipher);
+
+            byte[] buffer = new byte[1024 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                cipherOutputStream.write(buffer, 0, bytesRead);
+            }
+            cipherOutputStream.close();
+            fileOutputStream.close();
+            inputStream.close();
+            boolean f = tmp.delete();
+            if(f){
+                logger.debug("Successfully deleted file "+ tmp.getName() +" after encryption");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }
