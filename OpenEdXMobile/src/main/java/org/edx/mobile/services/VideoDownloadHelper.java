@@ -167,7 +167,7 @@ public class VideoDownloadHelper {
                                final FragmentActivity activity,
                                final DownloadManagerCallback callback) {
         if (downloadList.isEmpty()) return;
-
+        logger.debug(downloadList.toString());
         EnqueueDownloadTask downloadTask = new EnqueueDownloadTask(activity, downloadList) {
             @Override
             public void onSuccess(Long result) {

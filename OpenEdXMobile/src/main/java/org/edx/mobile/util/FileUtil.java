@@ -160,6 +160,7 @@ public class FileUtil {
      * @param extraFiles Files needed to delete.
      */
     public static void deleteExtraFilesNotInDatabase(List<VideoModel> dbEntries, ArrayList<File> extraFiles) {
+        logger.debug("DELETE: 0");
         boolean fileExist;
         for (File extraFile : extraFiles) {
             final String path = extraFile.getAbsolutePath();
@@ -169,7 +170,7 @@ public class FileUtil {
                     fileExist = true;
                 }
             }
-            if (!fileExist && !path.endsWith(".nomedia")) {
+            if (!fileExist && !path.endsWith(".nomedia") && !path.contains("_aes")) {
                 FileUtil.deleteRecursive(extraFile);
             }
         }
@@ -234,7 +235,9 @@ public class FileUtil {
      */
     public static void deleteRecursive(@NonNull File fileOrDirectory,
                                        @NonNull List<String> exceptions) {
-        if (exceptions.contains(fileOrDirectory.getName())) return;
+        if (exceptions.contains(fileOrDirectory.getName()) || fileOrDirectory
+                .getName().contains("_aes"))
+            return;
 
         if (fileOrDirectory.isDirectory()) {
             File[] filesList = fileOrDirectory.listFiles();
@@ -259,6 +262,14 @@ public class FileUtil {
      */
     public static boolean isVideoFileExists(@NonNull Context context, @NonNull String filepath) {
         final File videoFile = new File(filepath);
+        if(filepath.contains("_aes")){
+            File file = new File(filepath);
+            if(file.exists() && file.length()>0)
+                return true;
+        }
+        final File encryptedFile = new File(filepath + "_aes");
+        if(encryptedFile.exists())
+            return true;
         if (videoFile.exists()) {
             // Inspiration of this solution has taken from the following answer
             // https://stackoverflow.com/a/34440432
@@ -272,7 +283,7 @@ public class FileUtil {
                     return true;
                 }
             } catch (Exception e) {
-                // Ignore exception
+                logger.error(e);
             }
         }
         return false;

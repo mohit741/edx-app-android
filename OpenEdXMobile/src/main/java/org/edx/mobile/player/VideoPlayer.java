@@ -12,11 +12,15 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
@@ -25,7 +29,12 @@ import org.edx.mobile.logger.Logger;
 import org.edx.mobile.util.VideoUtil;
 import org.edx.mobile.view.OnSwipeListener;
 
+import java.io.File;
 import java.util.Locale;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import static org.edx.mobile.util.AppConstants.VIDEO_FORMAT_M3U8;
 
@@ -58,6 +67,18 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
     private String lmsURL;
     private String videoUri;
     private static final Logger logger = new Logger(VideoPlayer.class.getName());
+    // AES
+    private final String AES_ALGORITHM = "AES";
+    private final String AES_TRANSFORMATION = "AES/CTR/NoPadding";
+    private final String SECRET_KEY= "DCC789BCEB2C593D";
+    private final String IV = "B873CA042AAE847F";
+
+
+    private Cipher mCipher;
+    private SecretKeySpec mSecretKeySpec;
+    private IvParameterSpec mIvParameterSpec;
+
+    private File mEncryptedFile;
 
     public VideoPlayer(Context context) {
         init(context);
@@ -86,6 +107,14 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
         exoPlayer.addListener(this);
         exoPlayer.addAnalyticsListener(this);
         exoPlayer.setRepeatMode(Player.REPEAT_MODE_OFF);
+        mSecretKeySpec = new SecretKeySpec(SECRET_KEY.getBytes(), AES_ALGORITHM);
+        mIvParameterSpec = new IvParameterSpec(IV.getBytes());
+        try {
+            mCipher = Cipher.getInstance(AES_TRANSFORMATION);
+            mCipher.init(Cipher.DECRYPT_MODE, mSecretKeySpec, mIvParameterSpec);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -291,16 +320,28 @@ public class VideoPlayer implements Player.EventListener, AnalyticsListener, Pla
      * @return The {@link MediaSource} to play.
      */
     private MediaSource getMediaSource(String videoUrl) {
+        logger.debug("videoUrl : "+videoUrl);
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         final String userAgent = Util.getUserAgent(this.context, this.context.getString(R.string.app_name));
         final DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this.context, userAgent);
         final MediaSource mediaSource;
+        Uri uri = Uri.parse(videoUrl+"_aes");
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 
         if (VideoUtil.videoHasFormat(videoUrl, VIDEO_FORMAT_M3U8)) {
             mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(videoUrl));
         } else {
-            mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(videoUrl));
+            if(videoUrl.contains("/storage/")){
+                DataSpec dataSpec = new DataSpec(uri);
+                DataSource.Factory cryptedDataSourceFactory = new EncryptedFileDataSourceFactory(mCipher, mSecretKeySpec, mIvParameterSpec, bandwidthMeter, dataSpec);
+                mediaSource = new ExtractorMediaSource(uri, cryptedDataSourceFactory, extractorsFactory, null, null);
+                logger.debug("SUCCESS: Playing encrypted content : "+ uri.toString());
+            }
+            else {
+                mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(Uri.parse(videoUrl));
+            }
         }
         return mediaSource;
     }

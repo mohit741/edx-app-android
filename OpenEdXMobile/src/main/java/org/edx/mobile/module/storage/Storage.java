@@ -151,6 +151,7 @@ public class Storage implements IStorage {
 
     @Override
     public int removeDownloads(List<VideoModel> modelList) {
+        logger.debug("removeDownload called 1");
         final int deletedVideos = removeDownloadsFromApp(modelList, null);
         logger.debug("Number of downloads removed by Download Manager: " + deletedVideos);
         EventBus.getDefault().post(new DownloadedVideoDeletedEvent());
@@ -213,6 +214,7 @@ public class Storage implements IStorage {
      * @return true if delete succeeds or if file does NOT exist, false otherwise.
      */
     private boolean deleteFile(String filepath) {
+        logger.debug("removeDownload called 4");
         try {
             if(filepath != null) {
                 File file = new File(filepath);
@@ -423,12 +425,12 @@ public class Storage implements IStorage {
                     DownloadEntry e = (DownloadEntry) db.getDownloadEntryByDmId(dmId, null);
                     e.downloaded = DownloadEntry.DownloadedState.DOWNLOADED;
                     e.filepath = nm.filepath;
-                    if(e.size<=0){
+                    if(e.size==0){
                         e.size = nm.size;
                     }
                     e.downloadedOn = System.currentTimeMillis();
                     // update file duration
-                    if(e.duration==0){
+                    if(e.duration!=0){
                         try {
                             MediaMetadataRetriever r = new MediaMetadataRetriever();
                             FileInputStream in = new FileInputStream(new File(e.filepath));

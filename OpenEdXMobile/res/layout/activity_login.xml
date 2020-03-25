@@ -45,11 +45,11 @@
 
                     <ImageView
                         android:id="@+id/login_logo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="300dp"
+                        android:layout_height="200dp"
                         android:layout_gravity="center"
                         android:contentDescription="@string/phonetic_app_name"
-                        android:src="@drawable/login_screen_logo" />
+                        android:src="@drawable/mf_text_logo" />
                 </FrameLayout>
 
                 <LinearLayout
