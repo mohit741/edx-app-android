@@ -20,6 +20,7 @@ import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.util.FileUtil;
 import org.edx.mobile.util.ViewAnimationUtil;
 import org.edx.mobile.view.adapters.PopularSubjectsAdapter;
+import org.edx.mobile.view.custom.EdxWebView;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -41,7 +42,7 @@ public class WebViewDiscoverCoursesFragment extends WebViewDiscoverFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (shouldShowSubjectDiscovery()) {
-            initSubjects();
+            //initSubjects();
         }
     }
 
@@ -152,5 +153,8 @@ public class WebViewDiscoverCoursesFragment extends WebViewDiscoverFragment {
                 }
                 break;
         }
+    }
+    public EdxWebView getWebView(){
+        return super.getWebView();
     }
 }

@@ -35,13 +35,14 @@
                 android:visibility="gone"
                 app:civ_border_width="@dimen/drawer_profile_image_border_width"
                 tools:src="@drawable/profile_photo_placeholder"
-                tools:visibility="visible" />
+                tools:visibility="gone" />
 
             <TextView
                 android:id="@+id/toolbar_title_view"
                 style="@style/AppTheme.ToolBar.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
                 tools:text="Screen title" />
 
             <LinearLayout

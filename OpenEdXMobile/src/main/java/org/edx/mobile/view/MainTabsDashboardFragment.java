@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -68,21 +69,23 @@ public class MainTabsDashboardFragment extends TabsBaseFragment {
         if (isUserProfileEnabled) {
             profile = loginPrefs.getCurrentUserProfile();
             sendGetUpdatedAccountCall();
-            toolbarCallbacks.getProfileView().setVisibility(View.VISIBLE);
+//            toolbarCallbacks.getProfileView().setVisibility(View.VISIBLE);
         } else {
             toolbarCallbacks.getProfileView().setVisibility(View.GONE);
         }
     }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.my_courses, menu);
         menu.findItem(R.id.menu_item_account).setVisible(true);
-        menu.findItem(R.id.menu_item_account).setIcon(
-                new IconDrawable(getContext(), FontAwesomeIcons.fa_gear)
-                        .colorRes(getContext(), R.color.toolbar_controls_color)
-                        .actionBarSize(getContext()));
+        menu.findItem(R.id.menu_item_account).setIcon(getResources().getDrawable(R.drawable.profile_photo_placeholder));
+
+//                new IconDrawable(getContext(), FontAwesomeIcons.fa_gear)
+//                        .colorRes(getContext(), R.color.toolbar_controls_color)
+//                        .actionBarSize(getContext()));
     }
 
     @Override
@@ -122,6 +125,22 @@ public class MainTabsDashboardFragment extends TabsBaseFragment {
     public List<FragmentItemModel> getFragmentItems() {
         ArrayList<FragmentItemModel> items = new ArrayList<>();
 
+        // Show course discovery as default tab -mohit741
+        final Config.ProgramDiscoveryConfig programDiscoveryConfig = environment.getConfig().getDiscoveryConfig().getProgramDiscoveryConfig();
+        final Config.CourseDiscoveryConfig courseDiscoveryConfig = environment.getConfig().getDiscoveryConfig().getCourseDiscoveryConfig();
+        if ((courseDiscoveryConfig != null && courseDiscoveryConfig.isDiscoveryEnabled()) ||
+                (programDiscoveryConfig != null && programDiscoveryConfig.isDiscoveryEnabled(environment))) {
+            items.add(new FragmentItemModel(MainDiscoveryFragment.class,
+                    getResources().getString(R.string.label_discovery), FontAwesomeIcons.fa_search,
+                    new FragmentItemModel.FragmentStateListener() {
+                        @Override
+                        public void onFragmentSelected() {
+                            EventBus.getDefault().post(new DiscoveryTabSelectedEvent());
+                        }
+                    }
+            ));
+        }
+
         items.add(new FragmentItemModel(MyCoursesListFragment.class,
                 getResources().getString(R.string.label_my_courses), FontAwesomeIcons.fa_list_alt,
                 new FragmentItemModel.FragmentStateListener() {
@@ -144,20 +163,6 @@ public class MainTabsDashboardFragment extends TabsBaseFragment {
                     }));
         }
 
-        final Config.ProgramDiscoveryConfig programDiscoveryConfig = environment.getConfig().getDiscoveryConfig().getProgramDiscoveryConfig();
-        final Config.CourseDiscoveryConfig courseDiscoveryConfig = environment.getConfig().getDiscoveryConfig().getCourseDiscoveryConfig();
-        if ((courseDiscoveryConfig != null && courseDiscoveryConfig.isDiscoveryEnabled()) ||
-                (programDiscoveryConfig != null && programDiscoveryConfig.isDiscoveryEnabled(environment))) {
-            items.add(new FragmentItemModel(MainDiscoveryFragment.class,
-                    getResources().getString(R.string.label_discovery), FontAwesomeIcons.fa_search,
-                    new FragmentItemModel.FragmentStateListener() {
-                        @Override
-                        public void onFragmentSelected() {
-                            EventBus.getDefault().post(new DiscoveryTabSelectedEvent());
-                        }
-                    }
-            ));
-        }
 
         return items;
     }
@@ -219,5 +224,9 @@ public class MainTabsDashboardFragment extends TabsBaseFragment {
             getAccountCall.cancel();
         }
         EventBus.getDefault().unregister(this);
+    }
+
+    public WebView getWebview(){
+        return null;
     }
 }

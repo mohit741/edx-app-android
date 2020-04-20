@@ -87,6 +87,7 @@ public class MainDiscoveryFragment extends BaseFragment {
                 courseDiscoveryFragment = getChildFragmentManager().findFragmentByTag("fragment_courses_webview");
                 if (courseDiscoveryFragment == null) {
                     courseDiscoveryFragment = new WebViewDiscoverCoursesFragment();
+                    //System.out.println("MDF : "+courseDiscoveryFragment);
                     commitFragmentTransaction(courseDiscoveryFragment, "fragment_courses_webview");
                 }
             } else {
@@ -329,4 +330,5 @@ public class MainDiscoveryFragment extends BaseFragment {
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
     }
+
 }

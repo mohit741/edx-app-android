@@ -96,6 +96,10 @@ public class EdxCookieManager {
         }
     }
 
+    public void setAuthSessionCookieExpiration(){
+        authSessionCookieExpiration = System.currentTimeMillis() + FRESHNESS_INTERVAL;
+    }
+
     public boolean isSessionCookieMissingOrExpired() {
         return authSessionCookieExpiration < System.currentTimeMillis();
     }

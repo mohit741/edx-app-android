@@ -4,7 +4,11 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.util.Base64;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -13,7 +17,9 @@ import android.widget.ProgressBar;
 import com.google.inject.Inject;
 
 import org.edx.mobile.R;
+import org.edx.mobile.authentication.LoginService;
 import org.edx.mobile.core.IEdxEnvironment;
+import org.edx.mobile.event.SessionIdRefreshEvent;
 import org.edx.mobile.http.HttpStatus;
 import org.edx.mobile.http.HttpStatusException;
 import org.edx.mobile.http.notifications.FullScreenErrorNotification;
@@ -21,12 +27,21 @@ import org.edx.mobile.http.provider.OkHttpClientProvider;
 import org.edx.mobile.interfaces.RefreshListener;
 import org.edx.mobile.interfaces.WebViewStatusListener;
 import org.edx.mobile.logger.Logger;
+import org.edx.mobile.services.EdxCookieManager;
+import org.edx.mobile.util.Config;
 import org.edx.mobile.util.WebViewUtil;
 import org.edx.mobile.view.custom.EdxWebView;
 import org.edx.mobile.view.custom.URLInterceptorWebViewClient;
 
+import java.io.InputStream;
+
+import de.greenrobot.event.EventBus;
+import okhttp3.Cookie;
 import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -47,6 +62,15 @@ public abstract class BaseWebViewFragment extends OfflineSupportBaseFragment
 
     @Inject
     private OkHttpClientProvider okHttpClientProvider;
+
+
+    @Inject
+    private LoginService loginService;
+    @Inject
+    private Config config;
+
+
+    private Call<RequestBody> loginCall;
 
     protected URLInterceptorWebViewClient client;
 
@@ -88,6 +112,7 @@ public abstract class BaseWebViewFragment extends OfflineSupportBaseFragment
         client.setAllLinksAsExternal(isAllLinksExternal());
 
         client.setPageStatusListener(pageStatusListener);
+        webView.getSettings().setJavaScriptEnabled(true);
     }
 
     /**
@@ -96,6 +121,16 @@ public abstract class BaseWebViewFragment extends OfflineSupportBaseFragment
      * @param url The URL to load.
      */
     protected void loadUrl(@NonNull String url) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+            loadUrl(url,true);
+        else {
+            final EdxCookieManager edxCookieManager = EdxCookieManager.getSharedInstance(getContext());
+            if(edxCookieManager.isSessionCookieMissingOrExpired())
+                setSessionCookieAndLoadUrl(url, edxCookieManager);
+        }
+    }
+
+    protected void loadUrl(@NonNull String url, Boolean t) {
         WebViewUtil.loadUrlBasedOnOsVersion(getContext(), webView, url, this, errorNotification,
                 okHttpClientProvider, R.string.lbl_reload, new View.OnClickListener() {
                     @Override
@@ -162,6 +197,7 @@ public abstract class BaseWebViewFragment extends OfflineSupportBaseFragment
 
         @Override
         public void onPageFinished() {
+            injectCSS();
             hideLoadingProgress();
         }
 
@@ -205,4 +241,61 @@ public abstract class BaseWebViewFragment extends OfflineSupportBaseFragment
             onWebViewLoadProgressChanged(progress);
         }
     };
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public synchronized  void setSessionCookieAndLoadUrl(@NonNull String url, EdxCookieManager edxCookieManager){
+        if (loginCall == null || loginCall.isCanceled()) {
+            loginCall = loginService.login();
+            loginCall.enqueue(new Callback<RequestBody>() {
+                @Override
+                public void onResponse(@NonNull final Call<RequestBody> call,
+                                       @NonNull final Response<RequestBody> response) {
+                    edxCookieManager.clearWebWiewCookie();
+                    final CookieManager cookieManager = CookieManager.getInstance();
+                    for (Cookie cookie : Cookie.parseAll(
+                            call.request().url(), response.headers())) {
+                        cookieManager.setCookie(config.getApiHostURL(), cookie.toString(),  new ValueCallback<Boolean>() {
+                            @Override
+                            public void onReceiveValue(Boolean t) {
+                                if(t)
+                                    edxCookieManager.setAuthSessionCookieExpiration();
+                                loadUrl(url,t);
+                            }
+                        });
+                    }
+                    EventBus.getDefault().post(new SessionIdRefreshEvent(true));
+                    loginCall = null;
+                }
+
+                @Override
+                public void onFailure(@NonNull final Call<RequestBody> call,
+                                      @NonNull final Throwable error) {
+                    EventBus.getDefault().post(new SessionIdRefreshEvent(false));
+                    loginCall = null;
+                }
+            });
+        }
+    }
+    private void injectCSS() {
+        try {
+            InputStream inputStream = getContext().getAssets().open("css/style.css");
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+            inputStream.close();
+            String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+            webView.loadUrl("javascript:(function() {" +
+                    "var parent = document.getElementsByTagName('head').item(0);" +
+                    "var style = document.createElement('style');" +
+                    "style.type = 'text/css';" +
+                    // Tell the browser to BASE64-decode the string into your script !!!
+                    "style.innerHTML = window.atob('" + encoded + "');" +
+                    "parent.appendChild(style)" +
+                    "})()");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public EdxWebView getWebView(){
+        return webView;
+    }
 }

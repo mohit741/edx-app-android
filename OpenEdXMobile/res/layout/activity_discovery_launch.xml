@@ -28,6 +28,16 @@
                 android:contentDescription="@string/phonetic_app_name"
                 android:src="@drawable/mf_text_logo" />
 
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="150dp"
+                android:layout_height="50dp"
+                app:srcCompat="@drawable/garp"
+                android:contentDescription="@string/phonetic_app_name"
+                android:layout_below="@id/edx_logo"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"/>
+
             <TextView
                 android:id="@+id/tv_launch_text"
                 android:layout_width="wrap_content"

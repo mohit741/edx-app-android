@@ -129,17 +129,17 @@
     <!-- Content description for edit profile button -->
     <string name="open_profile_button">Open your profile</string>
     <!-- Title of user's course list screen -->
-    <string name="label_my_courses" tools:ignore="MissingTranslation">Courses</string>
+    <string name="label_my_courses" tools:ignore="MissingTranslation">My Courses</string>
     <!-- Title of user's program list screen -->
     <string name="label_my_programs" tools:ignore="MissingTranslation">Programs</string>
     <!-- Title of native Find Courses Screen -->
     <string name="label_find_courses">Find Courses</string>
     <!-- Title of webview based Find Courses Screen -->
-    <string name="label_discover" tools:ignore="MissingTranslation">Discover</string>
+    <string name="label_discover" tools:ignore="MissingTranslation">Explore New Courses</string>
     <!-- Title of Degrees tab on Discovery screen -->
     <string name="label_degrees" tools:ignore="MissingTranslation">Degrees</string>
     <!-- Title of Find Courses tab on Main Dashboard screen -->
-    <string name="label_discovery" tools:ignore="MissingTranslation">Discovery</string>
+    <string name="label_discovery" tools:ignore="MissingTranslation">Explore New</string>
     <!-- Button allowing users to send an email for feedback -->
     <string name="label_submit_feedback">Submit Feedback</string>
     <!-- Toggle switch on state label -->
@@ -546,7 +546,7 @@
     <!-- Google login method -->
     <string name="google_text">Google</string>
     <!-- Prompt allowing user to choose email program -->
-    <string name="email_chooser_header">Send email using...</string>
+    <string name="email_chooser_header">Send email using…</string>
     <!-- Error shown when user attempts to send email, but has no email app -->
     <string name="email_client_not_present">No e-mail clients installed</string>
     <!-- Search for a course prompt -->
@@ -571,7 +571,7 @@
     <!-- Button leading user to log in screen -->
     <string name="launch_login" tools:ignore="MissingTranslation">Log In</string>
     <!-- Introduction text on the launch screen -->
-    <string name="launch_text" tools:ignore="MissingTranslation">Courses from the world’s best universities in your pocket.</string>
+    <string name="launch_text" tools:ignore="MissingTranslation">Learn FRM from the best.</string>
     <!-- Search view leading user to Find Courses screen from the launch screen upon searching some text -->
     <string name="launch_search_courses" tools:ignore="MissingTranslation">Search Courses</string>
 
